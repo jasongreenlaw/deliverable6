@@ -28,71 +28,50 @@ public class Fuzzer {
 
     public static void main(String[] args) throws IOException {
         if(args.length  < 1) {
-            System.out.println("\nPlease use the following format:\njava Fuzzer [filename] [fuzz factor] [iterations]\n");
+            System.out.println("\nUse this format:\njava Fuzzer [filename] [fuzz factor] [iterations]\n");
             System.exit(1);
         }
 
-        String filename = args[0];
+        String fn = args[0];
         int fuzzFactor = Integer.parseInt(args[1]);
         int iterations = Integer.parseInt(args[2]);
 
-        Fuzzer fuzzer = new Fuzzer(filename, fuzzFactor);
+        Fuzzer fuzzer = new Fuzzer(fn, fuzzFactor);
         fuzzer.fuzz(iterations);
-    }
-
-    /*
-     * Sets path, converts input file to byte array,
-     * sets up output path, sets fuzz factor
-     */
-    public Fuzzer(String filename, int fuzzFactor) throws IOException {
-        path = Paths.get(filename);
-        fileBytes = Files.readAllBytes(path);
-        
-        output = "./output/output" + getExtension(path.getFileName().toString());
-        this.fuzzFactor = fuzzFactor;
     }
 
     /*
      * Insert random data into file, attempt to open it, and
      * detect errors caused by insertion of random data
      */
-    public void fuzz(int iterations) throws IOException {
-        FuzzerLogger logger = buildLogger(path, iterations, fileBytes.length);
+    public void fuzz(int it) throws IOException {
+        FuzzerLogger logger = buildLogger(path, it, fileBytes.length);
 
-        SecureRandom random = new SecureRandom();
+        SecureRandom ran = new SecureRandom();
 
         path = Paths.get(output);
-        for(int i = 0; i < iterations; i++) {
+        for(int i = 0; i < it; i++) {
 
-            int writes = 1 + random.nextInt(fileBytes.length / fuzzFactor);
+            int writes = 1 + ran.nextInt(fileBytes.length / fuzzFactor);
             
-            /*
-             * Generate a random byte and assign it to random index
-             */ 
+            
+            // Generate a random byte and assign it to random index 
             byte[] randomBytes = new byte[1];
             for(int j = 0; j < writes; j++) {
-                int randomIndex = random.nextInt(fileBytes.length);
-                random.nextBytes(randomBytes);
+                int randomIndex = ran.nextInt(fileBytes.length);
+                ran.nextBytes(randomBytes);
                 fileBytes[randomIndex] = randomBytes[0];
             }
 
-            /*
-             * Write modified file to output path
-             */ 
             Files.write(path, fileBytes);
 
-            /* 
-             * Opens output file in default program (on Mac), 
-             * may need to change command on Windows
-             */
             processBuilder = new ProcessBuilder("open", output);
             process = processBuilder.start();
 
             String time = Instant.now().toString();
 
-            /*
-             * Log errors and save files that cause errors
-             */ 
+
+             //Log errors and save files that cause errors
             InputStream error = process.getErrorStream();
             if(error.available() > 0) {
                 String hexDigest = getHashString(time);
@@ -131,21 +110,31 @@ public class Fuzzer {
         logger.writeStatisticsToLog();
     }
 
+     //Sets path, converts input file to byte array,
+     //sets up output path, sets fuzz factor
+    public Fuzzer(String fn, int fuzzFactor) throws IOException {
+        p = Paths.get(fn);
+        fileBytes = Files.readAllBytes(path);
+        
+        output = "./output/output" + getExtension(p.getFileName().toString());
+        this.fuzzFactor = fuzzFactor;
+    }
+
  /*
      * Gets file extension from file name
      * and returns extension as string
      */
-    public String getExtension(String filename) {
+    public String getExtension(String fn) {
         StringBuilder sb = new StringBuilder();
 
-        for(int i = filename.length() - 1; i >= 0; i--) {
-            sb.append(filename.charAt(i));
+        for(int i = fn.length() - 1; i >= 0; i--) {
+            sb.append(fn.charAt(i));
 
-            if(filename.charAt(i) == '.') {
+            if(fn.charAt(i) == '.') {
                 break;
             }
         }
-        
+
     /*
      * Sets all requisite information in the logger
      */
@@ -162,12 +151,12 @@ public class Fuzzer {
         return toReturn;
     }
 
-    public String getHashString(String s) {
+    public String getHashString(String string) {
         String hashString = "";
 
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update(s.getBytes());
+            digest.update(string.getBytes());
             byte[] hash  = digest.digest();
             hashString = new String(hash, "UTF-8");
         } catch (Exception e) {
