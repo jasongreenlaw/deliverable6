@@ -12,24 +12,32 @@ import java.time.Instant;
 public class FuzzLog {
     public Path path;
 
-    public int iterations;
-    public int errors;
-    public int fileSize;
+    public int it;
+    public int err;
+    public int f_size;
 
     public String statsLog = "./logs/stats.txt";
     public String errorsLog = "./logs/errors.txt";
 
+    public void printStatistics() {
+        System.out.println("STATS\n------");
+        System.out.println("Path: " + path);
+        System.out.println("File Size: " + f_size + " bytes");
+        System.out.println("Iterations: " + it);
+        System.out.println("Errors: " + err);
+    }
+
     public FuzzLog() {
-        this.iterations = 0;
-        errors = 0;
+        this.it = 0;
+        err = 0;
     }
 
     public void addError() {
-        errors++;
+        err++;
     }
 
     public int getErrors() {
-        return errors;
+        return err;
     }
 
     public void writeError(String filename, InputStream error, String time) throws IOException {
@@ -51,33 +59,15 @@ public class FuzzLog {
         Files.write(errorPath, fileBytes);
     }
 
-    public void setIterations(int iterations) {
-        this.iterations = iterations;
+    public void setIterations(int it) {
+        this.it = it;
     }
 
     public void setPath(Path path) {
         this.path = path;
     }
 
-     public void writeStatisticsToLog() throws IOException {
-        String time = Instant.now().toString();
-        String stats = "Time: " + time + "\nPath: " + path + "\nFile Size: " + fileSize + 
-                       " bytes" + "\nIterations: " + iterations + "\nErrors: " + errors + "\n\n";
-
-        Files.write(Paths.get(statsLog), stats.getBytes(), StandardOpenOption.APPEND);
+    public void setFileSize(int f_size) {
+        this.f_size = f_size;
     }
-
-    public void setFileSize(int fileSize) {
-        this.fileSize = fileSize;
-    }
-    
-    public void printStatistics() {
-        System.out.println("STATS\n------");
-        System.out.println("Path: " + path);
-        System.out.println("File Size: " + fileSize + " bytes");
-        System.out.println("Iterations: " + iterations);
-        System.out.println("Errors: " + errors);
-    }
-
-
 }
