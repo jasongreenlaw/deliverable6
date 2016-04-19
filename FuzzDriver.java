@@ -1,5 +1,4 @@
 import java.io.IOException;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -8,10 +7,10 @@ import java.nio.file.DirectoryStream;
 public class FuzzDriver {
 
     public static void fuzzDirectory(String dir) throws IOException {
-        DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get(dir));
-        for(Path path : ds) {
-            System.out.println("\nFuzzing " + path.toString() + "\n");
-            Fuzzer fuzzer = new Fuzzer(path.toString(), 200);
+        DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir));
+        for(Path p : stream) {
+            System.out.println("\nFuzzing " + p.toString() + "\n");
+            Fuzzer fuzzer = new Fuzzer(p.toString(), 200);
             fuzzer.fuzz(100);
         }
     }
